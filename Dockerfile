@@ -1,27 +1,27 @@
+# Compilador do código
+
+FROM openjdk:17-jdk-slim-buster AS build
+# crio uma máquina para realizar o build do código
+
+COPY . .
+# Copiar todos os arquivos da raiz do projeto apra dentro da imagem docker
+
+RUN chmod 700 mvnw
+# comando linux para habilitar a execução do arquivo mvnw
+
+RUN ./mvnw clean package
+# gera um .jar do código dentro da imagem
+
+### --------------
+
+# Executor do código compilado
+
 FROM openjdk:17-jdk-slim-buster
-# imagem de base da nossa imagem
-# sistema operacional linux + jdk 17
 
-LABEL authors="andre"
-#metadados da imagem
+WORKDIR app
 
-WORKDIR /app
-# dentro do sistema linux adicionado anteriormente
-# vamos criar uma pasta chamada "/app"
-
-COPY target/*.jar app.jar
-# copaindo qualquer arquivo .jar que esteja na pasta target
-# o jar é o código compilaod desse programa
-
-ENV SERVER-PORT=8082
-# define a variavel de ambiente SERVER-PORT que é lida pelo spring
-# é equivalente ao "server.port=" do application.properties
-
-EXPOSE 8082
-# porta exposta para o Docker
-# pode ser exposta para a máquina com o port-foward
-# temos que definir qual porta na nossa maquina equivale a 8082 do container
+COPY --from=build target/*.jar app.jar
+# copio do build anterior
+# o build é tratado como uma máquina separada
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
-# Comando de exercução da aplicação
-# lembrando que é em uma linhade comando Linux
